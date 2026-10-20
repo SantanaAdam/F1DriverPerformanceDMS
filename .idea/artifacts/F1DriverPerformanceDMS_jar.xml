@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="F1DriverPerformanceDMS:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/F1DriverPerformanceDMS_jar</output-path>
+    <root id="archive" name="F1DriverPerformanceDMS.jar">
+      <element id="module-output" name="F1DriverPerformanceDMS" />
+    </root>
+  </artifact>
+</component>
