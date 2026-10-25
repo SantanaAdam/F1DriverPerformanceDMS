@@ -81,6 +81,7 @@ public class F1ConsoleMenu {
         }
     }
 
+
     // Reads a decimal number
     private double readDouble(String message) {
         while (true) {
@@ -100,6 +101,21 @@ public class F1ConsoleMenu {
         }
     }
 
+    // Reads and validates fastest lap time
+    private double readLapTime() {
+        while (true) {
+            double lap = readDouble("Fastest lap time in seconds (greater than 0): ");
+
+            if (lap > 0) {
+                return lap;
+            }
+
+            System.out.println(
+                    "ERROR: Fastest lap time must be greater than 0 seconds."
+            );
+        }
+    }
+
     // Reads required text
     private String readText(String message) {
         while (true) {
@@ -110,7 +126,39 @@ public class F1ConsoleMenu {
                 return input;
             }
 
-            System.out.println("Text cannot be blank or contain commas.");
+            if (input.isEmpty()) {
+                System.out.println("ERROR: This field cannot be empty. Please enter text.");
+            } else {
+                System.out.println("ERROR: Commas are not allowed in this field.");
+            }
+        }
+    }
+
+    // Reads and validates a racing position between 1 and 20
+    private int readPosition(String message) {
+        while (true) {
+            int position = readInt(message);
+
+            if (position >= 1 && position <= 20) {
+                return position;
+            }
+
+            System.out.println("ERROR: Racing position must be between 1 and 20.");
+        }
+    }
+
+    // Reads championship points and prevents negative values
+    private int readPoints() {
+        while (true) {
+            int points = readInt("Championship points (0 or greater): ");
+
+            if (points >= 0) {
+                return points;
+            }
+
+            System.out.println(
+                    "ERROR: Championship points cannot be negative. Enter 0 or greater."
+            );
         }
     }
 
@@ -122,7 +170,9 @@ public class F1ConsoleMenu {
             try {
                 return LocalDate.parse(scanner.nextLine().trim());
             } catch (DateTimeParseException e) {
-                System.out.println("Invalid date. Example: 2025-04-06");
+                System.out.println(
+                        "ERROR: Invalid race date. Use YYYY-MM-DD format, such as 2025-04-06."
+                );
             }
         }
     }
@@ -141,7 +191,9 @@ public class F1ConsoleMenu {
                 return false;
             }
 
-            System.out.println("Please enter true or false.");
+            System.out.println(
+                    "ERROR: Enter true if the driver did not finish, or false if they finished."
+            );
         }
     }
 
@@ -185,10 +237,10 @@ public class F1ConsoleMenu {
         String grandPrix = readText("Grand Prix: ");
         LocalDate date = readDate();
 
-        int start = readInt("Starting position (1-20): ");
-        int finish = readInt("Finishing position (1-20): ");
-        int points = readInt("Championship points: ");
-        double lap = readDouble("Fastest lap time in seconds: ");
+        int start = readPosition("Starting position (1-20): ");
+        int finish = readPosition("Finishing position (1-20): ");
+        int points = readPoints();
+        double lap = readLapTime();
         boolean dnf = readBoolean();
 
         return new RaceResult(
@@ -197,9 +249,41 @@ public class F1ConsoleMenu {
         );
     }
 
-    // Adds a new result
+    // Adds a new result after checking for duplicate IDs
     private boolean addResult() {
-        int id = readInt("Enter new Result ID: ");
+
+        int id;
+
+        while (true) {
+
+            id = readInt("Enter new Result ID: ");
+
+            // Make sure the ID is a positive number
+            if (id <= 0) {
+                System.out.println("ERROR: Result ID must be a positive whole number.");
+                continue;
+            }
+
+            // Check if the ID already exists
+            boolean duplicate = false;
+
+            for (RaceResult result : application.listResults()) {
+                if (result.getResultId() == id) {
+                    duplicate = true;
+                    break;
+                }
+            }
+
+            if (duplicate) {
+                System.out.println("ERROR: Result ID " + id + " already exists.");
+                System.out.println("Please enter a different ID.");
+            } else {
+                System.out.println("Result ID accepted!");
+                break;
+            }
+        }
+
+        // Only collect the remaining fields after the ID is accepted
         RaceResult result = readRaceResult(id);
 
         if (application.createResult(result)) {
@@ -208,52 +292,184 @@ public class F1ConsoleMenu {
             return true;
         }
 
-        System.out.println("Unable to add result. Check the data or ID.");
+        System.out.println("Unable to add result. Check the entered data.");
         return false;
     }
 
-    // Updates a result by replacing its fields
+    // Updates only the field selected by the user
     private boolean updateResult() {
+
         int id = readInt("Enter Result ID to update: ");
 
-        boolean found = false;
+        RaceResult original = null;
+
+        // Find the existing race result
         for (RaceResult result : application.listResults()) {
             if (result.getResultId() == id) {
-                found = true;
+                original = result;
                 break;
             }
         }
 
-        if (!found) {
-            System.out.println("Result ID not found.");
+        if (original == null) {
+            System.out.println("ERROR: Result ID " + id + " was not found.");
             return false;
         }
 
-        System.out.println("Enter the replacement information:");
-        RaceResult replacement = readRaceResult(id);
+        boolean updated = false;
 
-        if (application.updateResult(id, replacement)) {
-            System.out.println("Race result updated successfully.");
-            displayResults();
-            return true;
-        }
+        while (true) {
 
-        System.out.println("Unable to update race result.");
-        return false;
-    }
+            System.out.println("\n===== UPDATE RACE RESULT =====");
+            System.out.println("Result ID: " + id);
+            System.out.println("1. Driver Name");
+            System.out.println("2. Team Name");
+            System.out.println("3. Grand Prix");
+            System.out.println("4. Race Date");
+            System.out.println("5. Starting Position");
+            System.out.println("6. Finishing Position");
+            System.out.println("7. Championship Points");
+            System.out.println("8. Fastest Lap Time");
+            System.out.println("9. DNF Status");
+            System.out.println("10. Return to Main Menu");
 
-    // Deletes a race result by ID
+            int choice = readInt("Choose a field to update: ");
+
+            if (choice == 10) {
+                return updated;
+            }
+
+            if (choice < 1 || choice > 9) {
+                System.out.println("ERROR: Choose a number between 1 and 10.");
+                continue;
+            }
+
+            // Keep all the original information
+            String driver = original.getDriverName();
+            String team = original.getTeamName();
+            String grandPrix = original.getGrandPrix();
+            LocalDate date = original.getRaceDate();
+            int start = original.getStartingPosition();
+            int finish = original.getFinishingPosition();
+            int points = original.getChampionshipPoints();
+            double lap = original.getFastestLapTime();
+            boolean dnf = original.isDnf();
+
+            // Change only the selected field
+            switch (choice) {
+
+                case 1:
+                    driver = readText("New driver name: ");
+                    break;
+
+                case 2:
+                    team = readText("New team name: ");
+                    break;
+
+                case 3:
+                    grandPrix = readText("New Grand Prix: ");
+                    break;
+
+                case 4:
+                    date = readDate();
+                    break;
+
+                case 5:
+                    start = readPosition("New starting position (1-20): ");
+                    break;
+
+                case 6:
+                    finish = readPosition("New finishing position (1-20): ");
+                    break;
+
+                case 7:
+                    points = readPoints();
+                    break;
+
+                case 8:
+                    lap = readLapTime();
+                    break;
+
+                case 9:
+                    dnf = readBoolean();
+                    break;
+            }
+
+            // Create a replacement record with the updated information
+            RaceResult replacement = new RaceResult(
+                    id, driver, team, grandPrix, date,
+                    start, finish, points, lap, dnf
+            );
+
+            // Save the updated record
+            if (application.updateResult(id, replacement)) {
+
+                System.out.println("Race result updated successfully!");
+
+                // Keep the updated information for additional changes
+                original = replacement;
+                updated = true;
+
+            } else {
+                System.out.println(
+                        "ERROR: Update failed. Check that the values are valid."
+                );
+            }
+
+        } // End of while loop
+
+    } // End of updateResult method
+    // Deletes a race result after asking for confirmation
     private boolean deleteResult() {
+
         int id = readInt("Enter Result ID to delete: ");
 
-        if (application.removeResult(id)) {
-            System.out.println("Race result deleted successfully.");
-            displayResults();
-            return true;
+        // Find the record before attempting deletion
+        RaceResult selected = null;
+
+        for (RaceResult result : application.listResults()) {
+            if (result.getResultId() == id) {
+                selected = result;
+                break;
+            }
         }
 
-        System.out.println("Result ID not found.");
-        return false;
+        if (selected == null) {
+            System.out.println("ERROR: Result ID " + id + " was not found.");
+            return false;
+        }
+
+        // Show the user which record will be deleted
+        System.out.println("\n===== DELETE RACE RESULT =====");
+        System.out.println("Result ID: " + selected.getResultId());
+        System.out.println("Driver: " + selected.getDriverName());
+        System.out.println("Grand Prix: " + selected.getGrandPrix());
+
+        // Ask for confirmation
+        while (true) {
+
+            System.out.print("Are you sure you want to delete this record? (Y/N): ");
+            String answer = scanner.nextLine().trim();
+
+            if (answer.equalsIgnoreCase("N")) {
+                System.out.println("Deletion cancelled. No records were removed.");
+                return false;
+            }
+
+            if (answer.equalsIgnoreCase("Y")) {
+
+                if (application.removeResult(id)) {
+                    System.out.println("Race result deleted successfully.");
+                    displayResults();
+                    return true;
+                }
+
+                System.out.println("ERROR: Unable to delete race result.");
+                return false;
+            }
+
+            System.out.println("ERROR: Please enter Y for Yes or N for No.");
+        }
     }
 
     // Displays the calculated statistics for a driver
