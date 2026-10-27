@@ -148,6 +148,7 @@ public class F1ConsoleMenu {
     }
 
     // Reads championship points and prevents negative values
+    // Reads championship points and prevents negative values
     private int readPoints() {
         while (true) {
             int points = readInt("Championship points (0 or greater): ");
@@ -218,14 +219,22 @@ public class F1ConsoleMenu {
         System.out.println("\n===== RACE RESULTS =====");
 
         for (RaceResult result : results) {
-            System.out.println(
-                    "ID: " + result.getResultId()
-                            + " | Driver: " + result.getDriverName()
-                            + " | Finish: " + result.getFinishingPosition()
-                            + " | Points: " + result.getChampionshipPoints()
-                            + " | DNF: " + result.isDnf()
-            );
+
+            System.out.println("----------------------------------------");
+            System.out.println("Result ID: " + result.getResultId());
+            System.out.println("Driver: " + result.getDriverName());
+            System.out.println("Team: " + result.getTeamName());
+            System.out.println("Grand Prix: " + result.getGrandPrix());
+            System.out.println("Race Date: " + result.getRaceDate());
+            System.out.println("Starting Position: " + result.getStartingPosition());
+            System.out.println("Finishing Position: " + result.getFinishingPosition());
+            System.out.println("Championship Points: " + result.getChampionshipPoints());
+            System.out.println("Fastest Lap Time: " + result.getFastestLapTime() + " seconds");
+            System.out.println("DNF: " + result.isDnf());
+
         }
+
+        System.out.println("----------------------------------------");
 
         return true;
     }
@@ -238,10 +247,20 @@ public class F1ConsoleMenu {
         LocalDate date = readDate();
 
         int start = readPosition("Starting position (1-20): ");
-        int finish = readPosition("Finishing position (1-20): ");
+
+        boolean dnf = readBoolean();
+
+        int finish;
+
+        if (dnf) {
+            finish = 0;
+            System.out.println("DNF selected. Finishing position automatically set to 0.");
+        } else {
+            finish = readPosition("Finishing position (1-20): ");
+        }
+
         int points = readPoints();
         double lap = readLapTime();
-        boolean dnf = readBoolean();
 
         return new RaceResult(
                 id, driver, team, grandPrix, date,
@@ -379,9 +398,14 @@ public class F1ConsoleMenu {
                     break;
 
                 case 6:
-                    finish = readPosition("New finishing position (1-20): ");
+                    if (dnf) {
+                        System.out.println(
+                                "This driver has a DNF. Change DNF status to false before updating the finishing position."
+                        );
+                    } else {
+                        finish = readPosition("New finishing position (1-20): ");
+                    }
                     break;
-
                 case 7:
                     points = readPoints();
                     break;
@@ -392,6 +416,14 @@ public class F1ConsoleMenu {
 
                 case 9:
                     dnf = readBoolean();
+
+                    if (dnf) {
+                        finish = 0;
+                        System.out.println("DNF selected. Finishing position set to 0.");
+                    } else if (finish == 0) {
+                        finish = readPosition("New finishing position (1-20): ");
+                    }
+
                     break;
             }
 
