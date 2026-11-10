@@ -5,6 +5,14 @@ import java.time.LocalDate;
 
 public class F1Dashboard extends JFrame {
 
+    // Maintains the SQLite connection selected by the user.
+    private final DatabaseConnection databaseConnection = new DatabaseConnection();
+
+    // Handles reading race results from SQLite.
+    private final RaceResultDatabase raceResultDatabase =
+            new RaceResultDatabase(databaseConnection);
+
+
     // Table used to display Formula 1 race results
     private JTable resultsTable;
     private DefaultTableModel tableModel;
@@ -188,29 +196,43 @@ public class F1Dashboard extends JFrame {
         add(mainPanel);
     }
     // Allow the user to select and load race results through the GUI
+
     private void loadRaceResults() {
 
+        // Let the user choose a SQLite database file.
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Select Race Results File");
+        fileChooser.setDialogTitle("Select F1 SQLite Database");
 
         int selection = fileChooser.showOpenDialog(this);
 
-        // Do nothing if the user cancels the file selection
         if (selection != JFileChooser.APPROVE_OPTION) {
             return;
         }
 
-        String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+        String databasePath =
+                fileChooser.getSelectedFile().getAbsolutePath();
 
         try {
-            // Use the existing application logic to load the file
-            int loaded = application.loadFile(filePath);
+            // Connect to the database selected by the user.
+            if (!databaseConnection.connect(databasePath)) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Unable to connect to the selected database.",
+                        "Connection Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                return;
+            }
 
-            // Clear existing rows before refreshing the table
+            // Retrieve all race results from SQLite.
+            java.util.List<RaceResult> results =
+                    raceResultDatabase.getAllResults();
+
+            // Clear the existing table.
             tableModel.setRowCount(0);
 
-            // Display each loaded race result
-            for (RaceResult result : application.listResults()) {
+            // Display each database record.
+            for (RaceResult result : results) {
 
                 Object[] row = {
                         result.getResultId(),
@@ -222,31 +244,29 @@ public class F1Dashboard extends JFrame {
                         result.getFinishingPosition(),
                         result.getChampionshipPoints(),
                         result.getFastestLapTime(),
-                        result.isDnf() ? "Yes" : "No"
+                        result.isDnf()
                 };
 
                 tableModel.addRow(row);
             }
 
-            // Show the user how many records were imported
             JOptionPane.showMessageDialog(
                     this,
-                    loaded + " race results loaded successfully.",
-                    "File Loaded",
+                    results.size() + " race results loaded from SQLite!",
+                    "Database Loaded",
                     JOptionPane.INFORMATION_MESSAGE
             );
 
-        } catch (Exception ex) {
-
-            // Display errors through the GUI instead of crashing
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(
                     this,
-                    "Unable to load race results:\n" + ex.getMessage(),
-                    "File Error",
+                    "Unable to read database: " + e.getMessage(),
+                    "Database Error",
                     JOptionPane.ERROR_MESSAGE
             );
         }
-    }// Display a form for entering a new Formula 1 race result
+    }
+
     private void showAddResultForm() {
 
         // Create input fields for all 10 attributes
@@ -354,7 +374,31 @@ public class F1Dashboard extends JFrame {
                 );
 
                 // Save using the existing application logic
-                boolean saved = application.createResult(newResult);
+
+                boolean saved = false;
+
+                if (!new ResultValidator().validate(newResult)) {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Invalid race result. Please check your input values.",
+                            "Validation Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                    return;
+                }
+
+                try {
+                    saved = raceResultDatabase.addResult(newResult);
+                } catch (java.sql.SQLException e) {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Unable to save race result: " + e.getMessage(),
+                            "Database Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                    return;
+                }
+
 
                 if (saved) {
 
@@ -459,7 +503,21 @@ public class F1Dashboard extends JFrame {
         }
 
         // Delete the record from the application
-        boolean deleted = application.removeResult(resultId);
+
+        boolean deleted = false;
+
+        try {
+            deleted = raceResultDatabase.deleteResult(resultId);
+        } catch (java.sql.SQLException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Unable to delete race result: " + e.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
 
         if (deleted) {
 
@@ -622,11 +680,21 @@ public class F1Dashboard extends JFrame {
                         dnf
                 );
 
-                // Update the record through the existing application logic
-                boolean updated = application.updateResult(
-                        resultId,
-                        updatedResult
-                );
+
+                // Validate the updated race result before saving
+                if (!new ResultValidator().validate(updatedResult)) {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Invalid race result. Please check your entries.",
+                            "Validation Error",
+                            JOptionPane.ERROR_MESSAGE
+                    );
+                    return;
+                }
+
+                // Save the updated race result directly to SQLite
+                boolean updated = raceResultDatabase.updateResult(updatedResult);
+
 
                 if (updated) {
 
@@ -715,8 +783,59 @@ public class F1Dashboard extends JFrame {
 
         String driverName = tableModel.getValueAt(modelRow, 1).toString();
 
-        // Calculate statistics using the existing application logic
-        DriverStatistics stats = application.getDriverStatistics(driverName);
+
+
+// Calculate driver statistics using SQLite records
+        int races = 0;
+        int wins = 0;
+        int podiums = 0;
+        int points = 0;
+        int totalFinishingPositions = 0;
+
+        try {
+            for (RaceResult result : raceResultDatabase.getAllResults()) {
+
+                if (result.getDriverName().equalsIgnoreCase(driverName)) {
+                    races++;
+                    points += result.getChampionshipPoints();
+
+                    if (!result.isDnf()) {
+                        int finish = result.getFinishingPosition();
+                        totalFinishingPositions += finish;
+
+                        if (finish == 1) {
+                            wins++;
+                        }
+
+                        if (finish <= 3) {
+                            podiums++;
+                        }
+                    }
+                }
+            }
+        } catch (java.sql.SQLException ex) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Unable to calculate statistics: " + ex.getMessage(),
+                    "Database Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
+        double averageFinish = races > 0
+                ? (double) totalFinishingPositions / races
+                : 0.0;
+
+        DriverStatistics stats = new DriverStatistics(
+                driverName,
+                races,
+                wins,
+                podiums,
+                points,
+                averageFinish
+        );
+
 
         // Format the statistics for display
         String message =
