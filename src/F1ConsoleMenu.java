@@ -13,14 +13,34 @@ public class F1ConsoleMenu {
     private final DmsApplication application;
     private final Scanner scanner;
 
+    /**
+     * Creates a new console menu for the Formula 1 Driver
+     * Performance Management System.
+     *
+     * Initializes the DmsApplication object used to manage
+     * race results and a Scanner object used to read
+     * user input from the console.
+     */
+
     public F1ConsoleMenu() {
         application = new DmsApplication();
         scanner = new Scanner(System.in);
     }
 
+
     /**
-     * Displays the menu until the user chooses Exit.
+     * Starts the Formula 1 Driver Performance Management System
+     * console menu.
+     *
+     * Displays the available menu options and allows the user
+     * to load, view, add, update, and delete race results,
+     * as well as view driver statistics.
+     *
+     * Continues running until the user selects the Exit option.
+     *
+     * @return true when the console menu finishes normally
      */
+
     public boolean start() {
         boolean running = true;
 

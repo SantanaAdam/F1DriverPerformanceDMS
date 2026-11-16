@@ -18,7 +18,16 @@ public class ResultManager {
         results = new ArrayList<>();
     }
 
-    // Adds a new result if the ID does not exist
+
+    /**
+     * Adds a new Formula 1 race result to the in-memory list.
+     * Prevents duplicate result IDs and rejects null entries.
+     *
+     * @param result the race result to add
+     * @return true if the result was added successfully,
+     *         false if the result is null or its ID already exists
+     */
+
     public boolean addResult(RaceResult result) {
         if (result == null ||
                 findById(result.getResultId()) != null) {
@@ -28,7 +37,14 @@ public class ResultManager {
         return results.add(result);
     }
 
-    // Finds a race result using its unique ID
+
+    /**
+     * Searches the stored race results for a matching result ID.
+     *
+     * @param id the unique identification number to search for
+     * @return the matching RaceResult object, or null if no result is found
+     */
+
     public RaceResult findById(int id) {
         for (RaceResult result : results) {
             if (result.getResultId() == id) {
@@ -39,12 +55,29 @@ public class ResultManager {
         return null;
     }
 
-    // Returns a copy of the race result list
+
+    /**
+     * Retrieves a copy of all Formula 1 race results stored in memory.
+     * Changes to the returned list do not modify the original list.
+     *
+     * @return a new list containing all stored race results
+     */
+
     public List<RaceResult> getAllResults() {
         return new ArrayList<>(results);
     }
 
-    // Replaces an existing race result
+
+    /**
+     * Updates an existing Formula 1 race result using its unique ID.
+     * The replacement must not be null and must have the same ID.
+     *
+     * @param id the unique ID of the race result to update
+     * @param replacement the new race result containing updated information
+     * @return true if the result was updated successfully,
+     *         false if the result was not found or the replacement is invalid
+     */
+
     public boolean updateResult(int id, RaceResult replacement) {
         if (replacement == null ||
                 replacement.getResultId() != id) {
@@ -61,7 +94,16 @@ public class ResultManager {
         return false;
     }
 
-    // Removes a race result using its ID
+
+    /**
+     * Deletes a Formula 1 race result from the in-memory list
+     * using its unique identification number.
+     *
+     * @param id the unique ID of the race result to delete
+     * @return true if the result was deleted successfully,
+     *         false if no matching result exists
+     */
+
     public boolean deleteResult(int id) {
         RaceResult result = findById(id);
 
@@ -72,7 +114,15 @@ public class ResultManager {
         return results.remove(result);
     }
 
-    // Finds all race results belonging to a driver
+
+    /**
+     * Retrieves race results associated with a specified Formula 1 driver.
+     *
+     * @param name the name of the driver to search for
+     * @return a list of matching race results, or an empty list
+     *         if the driver is not found or the name is null
+     */
+
     public List<RaceResult> getResultsByDriver(String name) {
         List<RaceResult> driverResults = new ArrayList<>();
 

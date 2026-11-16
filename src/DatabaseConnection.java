@@ -4,13 +4,25 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.io.File;
 
-// Handles connecting the F1 DMS application to a SQLite database.
+/**
+ * Manages the SQLite database connection for the Formula 1
+ * Driver Performance Management System.
+ *
+ * Provides methods to establish a connection to an existing
+ * database, retrieve the active connection, and safely close it.
+ */
 public class DatabaseConnection {
 
     private Connection connection;
 
-    // Connects to the database file selected by the user.
-    public boolean connect(String databasePath) {
+    /**
+     * Establishes a connection to an existing SQLite database file.
+     * Checks that the provided path is valid and that the file exists.
+     * Closes any previous connection before opening a new one.
+     *
+     * @param databasePath the path to the SQLite database file
+     * @return true if the connection is successful, false otherwise
+     */    public boolean connect(String databasePath) {
 
         // Reject blank or missing paths.
         if (databasePath == null || databasePath.trim().isEmpty()) {
@@ -40,12 +52,24 @@ public class DatabaseConnection {
         }
     }
 
-    // Provides the active connection to other database classes.
+    /**
+     * Retrieves the current SQLite database connection.
+     * Allows other classes to access the connected database
+     * and perform database operations.
+     *
+     * @return the active database connection, or null if
+     *         no database connection has been established
+     */
     public Connection getConnection() {
         return connection;
     }
 
-    // Closes the database connection safely.
+    /**
+     * Safely closes the current SQLite database connection.
+     * Checks whether a connection exists before attempting to close it.
+     * Handles any SQL exceptions that occur during the process
+     * and resets the connection reference to null.
+     */
     public void disconnect() {
         if (connection != null) {
             try {

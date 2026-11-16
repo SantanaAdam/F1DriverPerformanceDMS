@@ -2,7 +2,17 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.LocalDate;
-
+/**
+ * Provides the graphical user interface for the
+ * Formula 1 Driver Performance Management System.
+ *
+ * Displays race results in a table and allows users
+ * to load SQLite databases, add, update, and delete
+ * race results, and view driver performance statistics.
+ *
+ * Uses Java Swing components to create and manage
+ * the application dashboard.
+ */
 public class F1Dashboard extends JFrame {
 
     // Maintains the SQLite connection selected by the user.
@@ -18,7 +28,16 @@ public class F1Dashboard extends JFrame {
     private DefaultTableModel tableModel;
     // Connect the GUI to the existing application logic
     private final DmsApplication application = new DmsApplication();
-
+    /**
+     * Creates and initializes the Formula 1 Driver Performance
+     * Management System dashboard.
+     *
+     * Sets up the main application window, race results table,
+     * navigation buttons, and event listeners.
+     *
+     * Provides the graphical interface for managing race results
+     * and viewing driver performance statistics.
+     */
     public F1Dashboard() {
 
         // Set up the main application window

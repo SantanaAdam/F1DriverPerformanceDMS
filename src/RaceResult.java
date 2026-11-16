@@ -19,9 +19,23 @@ public class RaceResult {
     private double fastestLapTime;
     private boolean dnf;
 
+
     /**
-     * Creates a new Formula 1 race result.
+     * Creates a new Formula 1 race result containing driver
+     * information, race details, and performance statistics.
+     *
+     * @param id the unique identification number for the race result
+     * @param driver the name of the Formula 1 driver
+     * @param team the name of the driver's racing team
+     * @param grandPrix the name of the Grand Prix event
+     * @param date the date when the race took place
+     * @param start the driver's starting position in the race
+     * @param finish the driver's finishing position in the race
+     * @param points the championship points earned by the driver
+     * @param lap the driver's fastest lap time in seconds
+     * @param dnf indicates whether the driver did not finish the race
      */
+
     public RaceResult(int id, String driver, String team,
                       String grandPrix, LocalDate date,
                       int start, int finish, int points,
@@ -39,51 +53,111 @@ public class RaceResult {
         this.dnf = dnf;
     }
 
-    // Returns the unique race result ID
+
+    /**
+     * Gets the unique identification number of the race result.
+     *
+     * @return the unique race result ID
+     */
+
     public int getResultId() {
         return resultId;
     }
 
-    // Returns the driver's name
+
+    /**
+     * Gets the name of the Formula 1 driver.
+     *
+     * @return the driver's name
+     */
+
     public String getDriverName() {
         return driverName;
     }
 
-    // Returns the finishing position
+
+    /**
+     * Gets the driver's finishing position in the race.
+     *
+     * @return the finishing position
+     */
+
     public int getFinishingPosition() {
         return finishingPosition;
     }
 
-    // Returns the championship points
+
+    /**
+     * Gets the championship points earned by the driver.
+     *
+     * @return the number of championship points earned
+     */
+
     public int getChampionshipPoints() {
         return championshipPoints;
     }
 
-    // Returns whether the driver did not finish
+
+    /**
+     * Checks whether the driver did not finish the race.
+     *
+     * @return true if the driver did not finish, false otherwise
+     */
+
     public boolean isDnf() {
         return dnf;
     }
-    // Returns the team name
+
+    /**
+     * Gets the name of the Formula 1 racing team.
+     *
+     * @return the driver's team name
+     */
+
     public String getTeamName() {
         return teamName;
     }
 
-    // Returns the Grand Prix name
+
+    /**
+     * Gets the name of the Grand Prix event.
+     *
+     * @return the name of the Grand Prix
+     */
+
     public String getGrandPrix() {
         return grandPrix;
     }
 
-    // Returns the race date
+
+    /**
+     * Gets the date when the Formula 1 race took place.
+     *
+     * @return the race date as a LocalDate object
+     */
+
     public LocalDate getRaceDate() {
         return raceDate;
     }
 
-    // Returns the starting position
+
+    /**
+     * Gets the driver's starting position in the Formula 1 race.
+     *
+     * @return the driver's starting grid position
+     */
+
     public int getStartingPosition() {
         return startingPosition;
     }
 
-    // Returns the fastest lap time
+
+    /**
+     * Gets the driver's fastest recorded lap time during the race.
+     *
+     * @return the fastest lap time in seconds
+     */
+
     public double getFastestLapTime() {
         return fastestLapTime;
     }

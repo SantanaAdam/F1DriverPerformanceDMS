@@ -17,8 +17,14 @@ public class RaceResultFileReader {
     private final ResultValidator validator = new ResultValidator();
 
     /**
-     * Reads race results from the file provided by the user.
-     * Returns an empty list if the file cannot be read.
+     * Reads Formula 1 race results from a text file.
+     * Each record is parsed and validated before being added to the list.
+     * Invalid records are skipped, and an empty list is returned
+     * if the file path is invalid or the file cannot be read.
+     *
+     * @param filePath the path to the text file containing race results
+     * @return a list of valid RaceResult objects, or an empty list
+     *         if no valid results are available
      */
     public List<RaceResult> readResults(String filePath) {
 
@@ -62,8 +68,14 @@ public class RaceResultFileReader {
     }
 
     /**
-     * Converts one line of text into a RaceResult object.
-     * Returns null when the line contains invalid data.
+     * Converts a line of text into a Formula 1 race result.
+     * Splits the line into individual fields, converts the values
+     * to their appropriate data types, and validates the result.
+     * Returns null if the line is empty, incorrectly formatted,
+     * or contains invalid information.
+     *
+     * @param line the text containing one Formula 1 race result
+     * @return a valid RaceResult object, or null if the data is invalid
      */
     public RaceResult parseLine(String line) {
 
